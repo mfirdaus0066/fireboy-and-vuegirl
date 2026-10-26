@@ -1,45 +1,64 @@
 <!--
-  CHECKPOINT 0 — STARTER
-  This is plain HTML: nothing here is reactive yet.
-  Over the workshop you'll turn every hard-coded value into Vue state.
+  CHECKPOINT 1 — Reactivity basics (ref vs reactive)
+  New: ref(), reactive(), .value, {{ interpolation }}
 -->
 <script setup>
-// CP1: import { ref, reactive } from 'vue' and create your state here.
+import { ref, reactive } from 'vue'
+
+// ref() wraps ONE value: a string, number, boolean... or a whole array.
+const title = ref('My Todo List')
+
+const todos = ref([
+  { id: 1, text: 'Learn ref()', done: false },
+  { id: 2, text: 'Install Node.js', done: true },
+  { id: 3, text: 'Build a todo app', done: false },
+])
+
+// reactive() makes an OBJECT reactive. You use its properties directly.
+const user = reactive({ name: 'Student', streak: 1 })
+
+// Proof that the page updates by itself when data changes:
+// after 2 seconds we change the data, and Vue re-renders. No DOM code!
+setTimeout(() => {
+  title.value = 'My Reactive Todo List ⚡' // a ref needs .value in <script>
+  user.streak++                            // reactive does NOT use .value
+}, 2000)
 </script>
 
 <template>
   <div class="app">
     <div class="card">
-      <!-- CP1: replace the hard-coded title, name and count with {{ }} -->
-      <h1>My Todo List</h1>
-      <p class="sub">Hello, Student! You have 3 tasks.</p>
+      <!-- In the template, refs are unwrapped: no .value needed -->
+      <h1>{{ title }}</h1>
+      <p class="sub">
+        Hello, {{ user.name }}! You have {{ todos.length }}
+        {{ todos.length === 1 ? 'task' : 'tasks' }}. 🔥 Streak: {{ user.streak }} day(s)
+      </p>
 
-      <!-- CP3: make this form work with v-model -->
       <div class="row">
         <input type="text" placeholder="What needs doing?" />
         <button class="primary">Add</button>
       </div>
 
-      <!-- CP2: render this list from an array with v-for -->
+      <!-- Still repetitive... CP2 fixes this with v-for -->
       <ul class="list">
         <li class="item">
           <input type="checkbox" />
-          <span class="text">Learn ref()</span>
+          <span class="text">{{ todos[0].text }}</span>
           <button class="remove">✕</button>
         </li>
         <li class="item done">
           <input type="checkbox" checked />
-          <span class="text">Install Node.js</span>
+          <span class="text">{{ todos[1].text }}</span>
           <button class="remove">✕</button>
         </li>
         <li class="item">
           <input type="checkbox" />
-          <span class="text">Build a todo app</span>
+          <span class="text">{{ todos[2].text }}</span>
           <button class="remove">✕</button>
         </li>
       </ul>
 
-      <!-- CP4: real counts and working filters with computed() -->
       <div class="footer">
         <span>2 items left</span>
         <div class="filters">
