@@ -1,12 +1,12 @@
 <!--
-  CHECKPOINT 1 — Reactivity basics (ref vs reactive)
-  New: ref(), reactive(), .value, {{ interpolation }}
+  CHECKPOINT 2 — Template directives & event handling
+  New: v-for + :key, v-if / v-else, v-show, @click, :class
 -->
 <script setup>
 import { ref, reactive } from 'vue'
 
-// ref() wraps ONE value: a string, number, boolean... or a whole array.
 const title = ref('My Todo List')
+const user = reactive({ name: 'Student', streak: 1 })
 
 const todos = ref([
   { id: 1, text: 'Learn ref()', done: false },
@@ -14,53 +14,63 @@ const todos = ref([
   { id: 3, text: 'Build a todo app', done: false },
 ])
 
-// reactive() makes an OBJECT reactive. You use its properties directly.
-const user = reactive({ name: 'Student', streak: 1 })
+const showTips = ref(false)
+let nextId = 4
 
-// Proof that the page updates by itself when data changes:
-// after 2 seconds we change the data, and Vue re-renders. No DOM code!
-setTimeout(() => {
-  title.value = 'My Reactive Todo List ⚡' // a ref needs .value in <script>
-  user.streak++                            // reactive does NOT use .value
-}, 2000)
+// Event handlers are just functions
+function addSample() {
+  todos.value.push({ id: nextId, text: `Sample task #${nextId}`, done: false })
+  nextId++
+}
+
+function toggle(todo) {
+  todo.done = !todo.done
+}
+
+function remove(id) {
+  todos.value = todos.value.filter((t) => t.id !== id)
+}
 </script>
 
 <template>
   <div class="app">
     <div class="card">
-      <!-- In the template, refs are unwrapped: no .value needed -->
       <h1>{{ title }}</h1>
-      <p class="sub">
-        Hello, {{ user.name }}! You have {{ todos.length }}
-        {{ todos.length === 1 ? 'task' : 'tasks' }}. 🔥 Streak: {{ user.streak }} day(s)
-      </p>
+      <p class="sub">Hello, {{ user.name }}! You have {{ todos.length }} tasks.</p>
 
-      <div class="row">
-        <input type="text" placeholder="What needs doing?" />
-        <button class="primary">Add</button>
+      <!-- v-show only hides with CSS (element stays in the page) -->
+      <div class="toolbar">
+        <button class="link" @click="showTips = !showTips">
+          {{ showTips ? 'Hide' : 'Show' }} tips
+        </button>
+      </div>
+      <div v-show="showTips" class="tips">
+        Tip: click a checkbox to finish a task, ✕ to delete it.
       </div>
 
-      <!-- Still repetitive... CP2 fixes this with v-for -->
-      <ul class="list">
-        <li class="item">
-          <input type="checkbox" />
-          <span class="text">{{ todos[0].text }}</span>
-          <button class="remove">✕</button>
-        </li>
-        <li class="item done">
-          <input type="checkbox" checked />
-          <span class="text">{{ todos[1].text }}</span>
-          <button class="remove">✕</button>
-        </li>
-        <li class="item">
-          <input type="checkbox" />
-          <span class="text">{{ todos[2].text }}</span>
-          <button class="remove">✕</button>
+      <div class="row">
+        <input type="text" placeholder="What needs doing? (CP3)" disabled />
+        <button class="primary" @click="addSample">Add sample</button>
+      </div>
+
+      <!-- v-if / v-else really add/remove elements -->
+      <ul v-if="todos.length > 0" class="list">
+        <!-- v-for repeats the <li>; :key helps Vue track each item -->
+        <li
+          v-for="todo in todos"
+          :key="todo.id"
+          class="item"
+          :class="{ done: todo.done }"
+        >
+          <input type="checkbox" :checked="todo.done" @change="toggle(todo)" />
+          <span class="text">{{ todo.text }}</span>
+          <button class="remove" @click="remove(todo.id)">✕</button>
         </li>
       </ul>
+      <p v-else class="empty">🎉 Nothing to do! Add a task above.</p>
 
       <div class="footer">
-        <span>2 items left</span>
+        <span>? items left</span>
         <div class="filters">
           <button class="active">All</button>
           <button>Active</button>
