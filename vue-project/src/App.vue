@@ -1,9 +1,9 @@
 <!--
-  CHECKPOINT 3 — Form inputs & two-way binding
-  New: v-model on text input, textarea and checkbox; @submit.prevent
+  CHECKPOINT 4 — Computed properties & watchers
+  New: computed() for derived state, watch() for side effects
 -->
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 
 const title = ref('My Todo List')
 const user = reactive({ name: 'Student', streak: 1 })
@@ -17,14 +17,39 @@ const todos = ref([
 const showTips = ref(false)
 let nextId = 4
 
-// Form state — v-model keeps these in sync with the inputs
 const newText = ref('')
 const newNote = ref('')
 const newImportant = ref(false)
 
-function addTodo() {
-  if (newText.value.trim() === '') return
+// Which filter button is selected: 'all' | 'active' | 'done'
+const filter = ref('all')
 
+// ---- computed: values DERIVED from other state. Cached, auto-updated. ----
+const remaining = computed(() => todos.value.filter((t) => !t.done).length)
+const doneCount = computed(() => todos.value.length - remaining.value)
+const canAdd = computed(() => newText.value.trim().length > 0)
+
+const visibleTodos = computed(() => {
+  if (filter.value === 'active') return todos.value.filter((t) => !t.done)
+  if (filter.value === 'done') return todos.value.filter((t) => t.done)
+  return todos.value
+})
+
+// ---- watch: run a SIDE EFFECT when something changes ----
+// 1) Keep the browser tab title in sync with the count
+watch(remaining, (count) => {
+  document.title = count > 0 ? `(${count}) Todos` : 'All done! ✅'
+}, { immediate: true })
+
+// 2) Save the list whenever it changes. deep: true = also watch inside each todo.
+//    Check DevTools → Application → Local Storage. Refresh the page...
+//    the list resets! We save, but never load. That's CP6's job.
+watch(todos, (list) => {
+  localStorage.setItem('todos', JSON.stringify(list))
+}, { deep: true })
+
+function addTodo() {
+  if (!canAdd.value) return
   todos.value.push({
     id: nextId++,
     text: newText.value.trim(),
@@ -32,8 +57,6 @@ function addTodo() {
     important: newImportant.value,
     done: false,
   })
-
-  // Clearing the data also clears the inputs (two-way!)
   newText.value = ''
   newNote.value = ''
   newImportant.value = false
@@ -42,13 +65,17 @@ function addTodo() {
 function remove(id) {
   todos.value = todos.value.filter((t) => t.id !== id)
 }
+
+function clearDone() {
+  todos.value = todos.value.filter((t) => !t.done)
+}
 </script>
 
 <template>
   <div class="app">
     <div class="card">
       <h1>{{ title }}</h1>
-      <p class="sub">Hello, {{ user.name }}! You have {{ todos.length }} tasks.</p>
+      <p class="sub">Hello, {{ user.name }}! {{ remaining }} of {{ todos.length }} tasks left.</p>
 
       <div class="toolbar">
         <button class="link" @click="showTips = !showTips">
@@ -56,26 +83,23 @@ function remove(id) {
         </button>
       </div>
       <div v-show="showTips" class="tips">
-        Tip: press Enter to add a task. Tick "Important" to tag it.
+        Tip: the tab title updates as you tick tasks. That's a watcher.
       </div>
 
-      <!-- .prevent stops the browser from reloading the page on submit -->
       <form @submit.prevent="addTodo">
         <div class="row">
           <input v-model="newText" type="text" placeholder="What needs doing?" />
-          <button class="primary" type="submit">Add</button>
+          <button class="primary" type="submit" :disabled="!canAdd">Add</button>
         </div>
         <textarea v-model="newNote" rows="2" placeholder="Notes (optional)"></textarea>
         <label class="check">
           <input v-model="newImportant" type="checkbox" /> Important
         </label>
-        <!-- Live preview shows two-way binding working -->
-        <p v-if="newText" class="sub">Preview: "{{ newText }}"</p>
       </form>
 
-      <ul v-if="todos.length > 0" class="list">
-        <li v-for="todo in todos" :key="todo.id" class="item" :class="{ done: todo.done }">
-          <!-- v-model on a checkbox replaces :checked + @change from CP2 -->
+      <!-- Loop over the COMPUTED list, not the raw one -->
+      <ul v-if="visibleTodos.length > 0" class="list">
+        <li v-for="todo in visibleTodos" :key="todo.id" class="item" :class="{ done: todo.done }">
           <input v-model="todo.done" type="checkbox" />
           <span class="text">
             {{ todo.text }}
@@ -85,15 +109,18 @@ function remove(id) {
           <button class="remove" @click="remove(todo.id)">✕</button>
         </li>
       </ul>
-      <p v-else class="empty">🎉 Nothing to do! Add a task above.</p>
+      <p v-else class="empty">Nothing here for "{{ filter }}".</p>
 
       <div class="footer">
-        <span>? items left</span>
+        <span>{{ remaining }} {{ remaining === 1 ? 'item' : 'items' }} left</span>
         <div class="filters">
-          <button class="active">All</button>
-          <button>Active</button>
-          <button>Done</button>
+          <button :class="{ active: filter === 'all' }" @click="filter = 'all'">All</button>
+          <button :class="{ active: filter === 'active' }" @click="filter = 'active'">Active</button>
+          <button :class="{ active: filter === 'done' }" @click="filter = 'done'">Done</button>
         </div>
+        <button v-if="doneCount > 0" class="link" @click="clearDone">
+          Clear done ({{ doneCount }})
+        </button>
       </div>
     </div>
   </div>
