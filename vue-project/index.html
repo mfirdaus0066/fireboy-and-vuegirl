@@ -1,12 +1,31 @@
-<!DOCTYPE html>
-<html lang="">
+<!doctype html>
+<html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue Todo Workshop</title>
+    <style>
+      .cp-nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 6px; flex-wrap: wrap;
+        align-items: center; padding: 8px 16px; background: #1f2330; font: 13px system-ui, sans-serif; }
+      .cp-nav span { color: #9aa1b5; margin-right: 6px; }
+      .cp-nav a { color: #e6e8ef; text-decoration: none; padding: 4px 10px; border-radius: 6px; }
+      .cp-nav a:hover { background: #343a4d; }
+      .cp-nav a.on { background: #3b82f6; color: #fff; }
+    </style>
   </head>
   <body>
+    <nav class="cp-nav" id="cp-nav">
+      <span>View:</span>
+      <a href="/">My work</a>
+      <a href="/?cp=0">CP0 Start</a>
+      <a href="/?cp=1">CP1</a>
+      <a href="/?cp=2">CP2</a>
+      <a href="/?cp=3">CP3</a>
+      <a href="/?cp=4">CP4</a>
+      <a href="/?cp=5">CP5</a>
+      <a href="/?cp=6">CP6</a>
+      <a href="/?cp=7">CP7 Final</a>
+    </nav>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
