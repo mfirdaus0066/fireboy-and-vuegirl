@@ -23,7 +23,7 @@ Open the link it prints (usually http://localhost:5173).
 | `src/checkpoints/cp0 … cp7` | Finished code for each checkpoint. Peek if you're stuck! |
 | `src/services/fakeApi.js` | A pretend server, used in Checkpoint 7. |
 
-The bar at the top of the page switches between **My work** and each finished checkpoint.
+You can always check the answer by changing the branch.
 
 **Fell behind?** Copy the contents of the previous checkpoint folder into `src/student/` and carry on.
 
