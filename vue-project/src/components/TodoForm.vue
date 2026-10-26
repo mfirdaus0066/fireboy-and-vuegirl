@@ -1,9 +1,9 @@
 <!--
-  The "new task" form. It owns its own input state (local refs),
-  and emits ONE event with the finished task when submitted.
+  CP6 change: auto-focus the input when the form appears on screen.
+  You can't focus an element before it exists, so we wait for onMounted.
 -->
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const emit = defineEmits(['add'])
 
@@ -11,11 +11,17 @@ const text = ref('')
 const note = ref('')
 const important = ref(false)
 
+// A "template ref": Vue puts the real <input> element in here after mounting
+const inputEl = ref(null)
+
 const canAdd = computed(() => text.value.trim().length > 0)
+
+onMounted(() => {
+  inputEl.value.focus()
+})
 
 function submit() {
   if (!canAdd.value) return
-  // Send the data UP to the parent, then reset the form
   emit('add', {
     text: text.value.trim(),
     note: note.value.trim(),
@@ -30,7 +36,7 @@ function submit() {
 <template>
   <form @submit.prevent="submit">
     <div class="row">
-      <input v-model="text" type="text" placeholder="What needs doing?" />
+      <input ref="inputEl" v-model="text" type="text" placeholder="What needs doing?" />
       <button class="primary" type="submit" :disabled="!canAdd">Add</button>
     </div>
     <textarea v-model="note" rows="2" placeholder="Notes (optional)"></textarea>
