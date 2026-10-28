@@ -29,7 +29,7 @@
         </li>
         <li class="item done">
           <input type="checkbox" checked />
-          <span class="text">Install Node.js</span>
+          <span class="text">Node.js</span>
           <button class="remove">✕</button>
         </li>
         <li class="item">
